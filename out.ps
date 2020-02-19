@@ -1,0 +1,2094 @@
+%!PS-Adobe-3.0
+%%BoundingBox: 24 24 571 818
+%%Title: Enscript Output
+%%For: Erik Nystad
+%%Creator: GNU Enscript 1.6.6
+%%CreationDate: Thu Jun  6 14:28:56 2019
+%%Orientation: Landscape
+%%Pages: (atend)
+%%DocumentMedia: A4 595 842 0 () ()
+%%DocumentNeededResources: (atend)
+%%EndComments
+%%BeginProlog
+%%BeginResource: procset Enscript-Prolog 1.6 6
+%
+% Procedures.
+%
+
+/_S {	% save current state
+  /_s save def
+} def
+/_R {	% restore from saved state
+  _s restore
+} def
+
+/S {	% showpage protecting gstate
+  gsave
+  showpage
+  grestore
+} bind def
+
+/MF {	% fontname newfontname -> -	make a new encoded font
+  /newfontname exch def
+  /fontname exch def
+
+  /fontdict fontname findfont def
+  /newfont fontdict maxlength dict def
+
+  fontdict {
+    exch
+    dup /FID eq {
+      % skip FID pair
+      pop pop
+    } {
+      % copy to the new font dictionary
+      exch newfont 3 1 roll put
+    } ifelse
+  } forall
+
+  newfont /FontName newfontname put
+
+  % insert only valid encoding vectors
+  encoding_vector length 256 eq {
+    newfont /Encoding encoding_vector put
+  } if
+
+  newfontname newfont definefont pop
+} def
+
+/MF_PS { % fontname newfontname -> -	make a new font preserving its enc
+  /newfontname exch def
+  /fontname exch def
+
+  /fontdict fontname findfont def
+  /newfont fontdict maxlength dict def
+
+  fontdict {
+    exch
+    dup /FID eq {
+      % skip FID pair
+      pop pop
+    } {
+      % copy to the new font dictionary
+      exch newfont 3 1 roll put
+    } ifelse
+  } forall
+
+  newfont /FontName newfontname put
+
+  newfontname newfont definefont pop
+} def
+
+/SF { % fontname width height -> -	set a new font
+  /height exch def
+  /width exch def
+
+  findfont
+  [width 0 0 height 0 0] makefont setfont
+} def
+
+/SUF { % fontname width height -> -	set a new user font
+  /height exch def
+  /width exch def
+
+  /F-gs-user-font MF
+  /F-gs-user-font width height SF
+} def
+
+/SUF_PS { % fontname width height -> -	set a new user font preserving its enc
+  /height exch def
+  /width exch def
+
+  /F-gs-user-font MF_PS
+  /F-gs-user-font width height SF
+} def
+
+/M {moveto} bind def
+/s {show} bind def
+
+/Box {	% x y w h -> -			define box path
+  /d_h exch def /d_w exch def /d_y exch def /d_x exch def
+  d_x d_y  moveto
+  d_w 0 rlineto
+  0 d_h rlineto
+  d_w neg 0 rlineto
+  closepath
+} def
+
+/bgs {	% x y height blskip gray str -> -	show string with bg color
+  /str exch def
+  /gray exch def
+  /blskip exch def
+  /height exch def
+  /y exch def
+  /x exch def
+
+  gsave
+    x y blskip sub str stringwidth pop height Box
+    gray setgray
+    fill
+  grestore
+  x y M str s
+} def
+
+/bgcs { % x y height blskip red green blue str -> -  show string with bg color
+  /str exch def
+  /blue exch def
+  /green exch def
+  /red exch def
+  /blskip exch def
+  /height exch def
+  /y exch def
+  /x exch def
+
+  gsave
+    x y blskip sub str stringwidth pop height Box
+    red green blue setrgbcolor
+    fill
+  grestore
+  x y M str s
+} def
+
+% Highlight bars.
+/highlight_bars {	% nlines lineheight output_y_margin gray -> -
+  gsave
+    setgray
+    /ymarg exch def
+    /lineheight exch def
+    /nlines exch def
+
+    % This 2 is just a magic number to sync highlight lines to text.
+    0 d_header_y ymarg sub 2 sub translate
+
+    /cw d_output_w cols div def
+    /nrows d_output_h ymarg 2 mul sub lineheight div cvi def
+
+    % for each column
+    0 1 cols 1 sub {
+      cw mul /xp exch def
+
+      % for each rows
+      0 1 nrows 1 sub {
+        /rn exch def
+        rn lineheight mul neg /yp exch def
+        rn nlines idiv 2 mod 0 eq {
+	  % Draw highlight bar.  4 is just a magic indentation.
+	  xp 4 add yp cw 8 sub lineheight neg Box fill
+	} if
+      } for
+    } for
+
+  grestore
+} def
+
+% Line highlight bar.
+/line_highlight {	% x y width height gray -> -
+  gsave
+    /gray exch def
+    Box gray setgray fill
+  grestore
+} def
+
+% Column separator lines.
+/column_lines {
+  gsave
+    .1 setlinewidth
+    0 d_footer_h translate
+    /cw d_output_w cols div def
+    1 1 cols 1 sub {
+      cw mul 0 moveto
+      0 d_output_h rlineto stroke
+    } for
+  grestore
+} def
+
+% Column borders.
+/column_borders {
+  gsave
+    .1 setlinewidth
+    0 d_footer_h moveto
+    0 d_output_h rlineto
+    d_output_w 0 rlineto
+    0 d_output_h neg rlineto
+    closepath stroke
+  grestore
+} def
+
+% Do the actual underlay drawing
+/draw_underlay {
+  ul_style 0 eq {
+    ul_str true charpath stroke
+  } {
+    ul_str show
+  } ifelse
+} def
+
+% Underlay
+/underlay {	% - -> -
+  gsave
+    0 d_page_h translate
+    d_page_h neg d_page_w atan rotate
+
+    ul_gray setgray
+    ul_font setfont
+    /dw d_page_h dup mul d_page_w dup mul add sqrt def
+    ul_str stringwidth pop dw exch sub 2 div ul_h_ptsize -2 div moveto
+    draw_underlay
+  grestore
+} def
+
+/user_underlay {	% - -> -
+  gsave
+    ul_x ul_y translate
+    ul_angle rotate
+    ul_gray setgray
+    ul_font setfont
+    0 0 ul_h_ptsize 2 div sub moveto
+    draw_underlay
+  grestore
+} def
+
+% Page prefeed
+/page_prefeed {		% bool -> -
+  statusdict /prefeed known {
+    statusdict exch /prefeed exch put
+  } {
+    pop
+  } ifelse
+} def
+
+% Wrapped line markers
+/wrapped_line_mark {	% x y charwith charheight type -> -
+  /type exch def
+  /h exch def
+  /w exch def
+  /y exch def
+  /x exch def
+
+  type 2 eq {
+    % Black boxes (like TeX does)
+    gsave
+      0 setlinewidth
+      x w 4 div add y M
+      0 h rlineto w 2 div 0 rlineto 0 h neg rlineto
+      closepath fill
+    grestore
+  } {
+    type 3 eq {
+      % Small arrows
+      gsave
+        .2 setlinewidth
+        x w 2 div add y h 2 div add M
+        w 4 div 0 rlineto
+        x w 4 div add y lineto stroke
+
+        x w 4 div add w 8 div add y h 4 div add M
+        x w 4 div add y lineto
+	w 4 div h 8 div rlineto stroke
+      grestore
+    } {
+      % do nothing
+    } ifelse
+  } ifelse
+} def
+
+% EPSF import.
+
+/BeginEPSF {
+  /b4_Inc_state save def    		% Save state for cleanup
+  /dict_count countdictstack def	% Count objects on dict stack
+  /op_count count 1 sub def		% Count objects on operand stack
+  userdict begin
+  /showpage { } def
+  0 setgray 0 setlinecap
+  1 setlinewidth 0 setlinejoin
+  10 setmiterlimit [ ] 0 setdash newpath
+  /languagelevel where {
+    pop languagelevel
+    1 ne {
+      false setstrokeadjust false setoverprint
+    } if
+  } if
+} bind def
+
+/EndEPSF {
+  count op_count sub { pos } repeat	% Clean up stacks
+  countdictstack dict_count sub { end } repeat
+  b4_Inc_state restore
+} bind def
+
+% Check PostScript language level.
+/languagelevel where {
+  pop /gs_languagelevel languagelevel def
+} {
+  /gs_languagelevel 1 def
+} ifelse
+%%EndResource
+%%BeginResource: procset Enscript-Encoding-88591 1.6 6
+/encoding_vector [
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/space        	/exclam       	/quotedbl     	/numbersign   	
+/dollar       	/percent      	/ampersand    	/quoteright   	
+/parenleft    	/parenright   	/asterisk     	/plus         	
+/comma        	/hyphen       	/period       	/slash        	
+/zero         	/one          	/two          	/three        	
+/four         	/five         	/six          	/seven        	
+/eight        	/nine         	/colon        	/semicolon    	
+/less         	/equal        	/greater      	/question     	
+/at           	/A            	/B            	/C            	
+/D            	/E            	/F            	/G            	
+/H            	/I            	/J            	/K            	
+/L            	/M            	/N            	/O            	
+/P            	/Q            	/R            	/S            	
+/T            	/U            	/V            	/W            	
+/X            	/Y            	/Z            	/bracketleft  	
+/backslash    	/bracketright 	/asciicircum  	/underscore   	
+/quoteleft    	/a            	/b            	/c            	
+/d            	/e            	/f            	/g            	
+/h            	/i            	/j            	/k            	
+/l            	/m            	/n            	/o            	
+/p            	/q            	/r            	/s            	
+/t            	/u            	/v            	/w            	
+/x            	/y            	/z            	/braceleft    	
+/bar          	/braceright   	/tilde        	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/space        	/exclamdown   	/cent         	/sterling     	
+/currency     	/yen          	/brokenbar    	/section      	
+/dieresis     	/copyright    	/ordfeminine  	/guillemotleft	
+/logicalnot   	/hyphen       	/registered   	/macron       	
+/degree       	/plusminus    	/twosuperior  	/threesuperior	
+/acute        	/mu           	/paragraph    	/bullet       	
+/cedilla      	/onesuperior  	/ordmasculine 	/guillemotright	
+/onequarter   	/onehalf      	/threequarters	/questiondown 	
+/Agrave       	/Aacute       	/Acircumflex  	/Atilde       	
+/Adieresis    	/Aring        	/AE           	/Ccedilla     	
+/Egrave       	/Eacute       	/Ecircumflex  	/Edieresis    	
+/Igrave       	/Iacute       	/Icircumflex  	/Idieresis    	
+/Eth          	/Ntilde       	/Ograve       	/Oacute       	
+/Ocircumflex  	/Otilde       	/Odieresis    	/multiply     	
+/Oslash       	/Ugrave       	/Uacute       	/Ucircumflex  	
+/Udieresis    	/Yacute       	/Thorn        	/germandbls   	
+/agrave       	/aacute       	/acircumflex  	/atilde       	
+/adieresis    	/aring        	/ae           	/ccedilla     	
+/egrave       	/eacute       	/ecircumflex  	/edieresis    	
+/igrave       	/iacute       	/icircumflex  	/idieresis    	
+/eth          	/ntilde       	/ograve       	/oacute       	
+/ocircumflex  	/otilde       	/odieresis    	/divide       	
+/oslash       	/ugrave       	/uacute       	/ucircumflex  	
+/udieresis    	/yacute       	/thorn        	/ydieresis    	
+] def
+%%EndResource
+%%EndProlog
+%%BeginSetup
+%%IncludeResource: font Courier-Bold
+%%IncludeResource: font Courier
+/HFpt_w 10 def
+/HFpt_h 10 def
+/Courier-Bold /HF-gs-font MF
+/HF /HF-gs-font findfont [HFpt_w 0 0 HFpt_h 0 0] makefont def
+/Courier /F-gs-font MF
+/F-gs-font 7 7 SF
+/#copies 1 def
+% Pagedevice definitions:
+gs_languagelevel 1 gt {
+  <<
+    /PageSize [595 842] 
+  >> setpagedevice
+} if
+%%BeginResource: procset Enscript-Header-enscript 1.6 6
+%%IncludeResource: font Times-Bold
+%%IncludeResource: font Times-Roman
+
+% Fonts.
+/Times-Bold /HeaderFont-Bold MF
+/HeaderDateF /HeaderFont-Bold findfont 12 scalefont def
+
+/Times-Roman /HeaderFont-Times MF
+/HeaderHDRF /HeaderFont-Times findfont 14 scalefont def
+
+/HeaderPageNumF /Helvetica-Bold findfont 28.8 scalefont def
+
+/do_header {	% print enscript header
+  gsave
+    d_header_x d_header_y translate
+
+    % light bar
+    0 0 d_header_w d_header_h 2 div Box
+    .95 setgray fill
+
+    % dark gray boxes
+    /dbw d_header_h 2 mul def	% dark box width
+    /dbc .7 def			% dark box color
+
+    % left dark box.
+    0 0 dbw d_header_h Box
+    dbc setgray fill
+
+    0 setgray 
+    HeaderDateF setfont
+    moddatestr dup stringwidth pop dbw exch sub 2 div 
+    d_header_h 2 div 2 add moveto show
+    modtimestr dup stringwidth pop dbw exch sub 2 div 
+    d_header_h 5 div moveto show
+
+    % right dark box
+    d_header_w dbw sub 0 dbw d_header_h Box
+    dbc setgray fill
+
+    HeaderPageNumF setfont
+    1 setgray
+    pagenumstr dup
+    stringwidth pop dbw exch sub 2 div d_header_w dbw sub add
+    d_header_h .2 mul moveto show
+
+    % filename
+    0 setgray 
+    HeaderHDRF setfont
+    d_header_w fname stringwidth pop sub 2 div d_header_h 8 div moveto
+    fname show
+
+    % user supplied header string.
+    user_header_p {
+      /h d_header_h 8 div 5 mul def
+
+      % Implement strict enscript compatibility.
+      user_header_center_str () eq user_header_right_str () eq and {
+        d_header_w user_header_left_str stringwidth pop sub 2 div 
+        h moveto user_header_left_str show
+      } {
+        dbw 5 add h moveto user_header_left_str show
+
+        d_header_w user_header_center_str stringwidth pop sub 2 div 
+        h moveto user_header_center_str show
+
+	d_header_w dbw sub 5 sub user_header_right_str stringwidth pop
+	sub h moveto user_header_right_str show
+      } ifelse
+    } if
+
+  grestore
+} def
+%%EndResource
+/d_page_w 794 def
+/d_page_h 547 def
+/d_header_x 0 def
+/d_header_y 511 def
+/d_header_w 794 def
+/d_header_h 36 def
+/d_footer_x 0 def
+/d_footer_y 0 def
+/d_footer_w 794 def
+/d_footer_h 0 def
+/d_output_w 794 def
+/d_output_h 511 def
+/cols 2 def
+%%EndSetup
+%%Page: (1) 1
+%%BeginPageSetup
+_S
+90 rotate
+24 -571 translate
+/pagenum 1 def
+/fname (Oblig1.java) def
+/fdir (.) def
+/ftail (Oblig1.java) def
+% User defined strings:
+/pagenumstr (1) def
+/moddatestr (06/06/19) def
+/modtimestr (14:26:33) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+column_lines
+do_header
+22.8 501 M (1:) s
+35.4 501 M
+(Oblig1) s
+22.8 493 M (2:) s
+/Courier-Oblique 7 7 SUF
+35.4 493 M
+(//Klasse for representasjon av noder i en regneklynge) s
+/F-gs-font 7 7 SF
+22.8 485 M (3:) s
+/Courier-Oblique 7 7 SUF
+/F-gs-font 7 7 SF
+/Courier-Bold 7 7 SUF
+35.4 485 M
+(class) s
+/F-gs-font 7 7 SF
+56.4 485 M
+( Node {) s
+22.8 477 M (4:) s
+35.4 477 M
+(  ) s
+/Courier-Oblique 7 7 SUF
+43.8 477 M
+(// oppretter instansvariabler av type int for minne og prosessorer) s
+/F-gs-font 7 7 SF
+22.8 469 M (5:) s
+/Courier-Oblique 7 7 SUF
+/F-gs-font 7 7 SF
+35.4 469 M
+(  ) s
+/Courier-Bold 7 7 SUF
+43.8 469 M
+(private) s
+/F-gs-font 7 7 SF
+73.2 469 M
+( ) s
+/Courier-Bold 7 7 SUF
+77.4 469 M
+(int) s
+/F-gs-font 7 7 SF
+90 469 M
+( minne;) s
+22.8 461 M (6:) s
+35.4 461 M
+(  ) s
+/Courier-Bold 7 7 SUF
+43.8 461 M
+(private) s
+/F-gs-font 7 7 SF
+73.2 461 M
+( ) s
+/Courier-Bold 7 7 SUF
+77.4 461 M
+(int) s
+/F-gs-font 7 7 SF
+90 461 M
+( antPros;) s
+22.8 453 M (7:) s
+22.8 445 M (8:) s
+35.4 445 M
+(  ) s
+/Courier-Oblique 7 7 SUF
+43.8 445 M
+(// Konstruktor som tar imot minne og antall prosessorer noden skal ha.) s
+/F-gs-font 7 7 SF
+22.8 437 M (9:) s
+/Courier-Oblique 7 7 SUF
+/F-gs-font 7 7 SF
+35.4 437 M
+(  ) s
+/Courier-Oblique 7 7 SUF
+43.8 437 M
+(// Denne kalles automatisk naar objektet opprettes.) s
+/F-gs-font 7 7 SF
+18.6 429 M (10:) s
+/Courier-Oblique 7 7 SUF
+/F-gs-font 7 7 SF
+35.4 429 M
+(  ) s
+/Courier-Bold 7 7 SUF
+43.8 429 M
+(public) s
+/F-gs-font 7 7 SF
+69 429 M
+( Node \() s
+/Courier-Bold 7 7 SUF
+98.4 429 M
+(int) s
+/F-gs-font 7 7 SF
+111 429 M
+( minne, ) s
+/Courier-Bold 7 7 SUF
+144.6 429 M
+(int) s
+/F-gs-font 7 7 SF
+157.2 429 M
+( antPros\) {) s
+18.6 421 M (11:) s
+35.4 421 M
+(    ) s
+/Courier-Bold 7 7 SUF
+52.2 421 M
+(this) s
+/F-gs-font 7 7 SF
+69 421 M
+(.minne = minne;) s
+18.6 413 M (12:) s
+35.4 413 M
+(    ) s
+/Courier-Bold 7 7 SUF
+52.2 413 M
+(this) s
+/F-gs-font 7 7 SF
+69 413 M
+(.antPros = antPros;) s
+18.6 405 M (13:) s
+35.4 405 M
+(  }) s
+18.6 397 M (14:) s
+18.6 389 M (15:) s
+35.4 389 M
+(  ) s
+/Courier-Oblique 7 7 SUF
+43.8 389 M
+(// henter antall prosesserer for en enkelt node) s
+/F-gs-font 7 7 SF
+18.6 381 M (16:) s
+/Courier-Oblique 7 7 SUF
+/F-gs-font 7 7 SF
+35.4 381 M
+(  ) s
+/Courier-Oblique 7 7 SUF
+43.8 381 M
+(// returverdi av type int) s
+/F-gs-font 7 7 SF
+18.6 373 M (17:) s
+/Courier-Oblique 7 7 SUF
+/F-gs-font 7 7 SF
+35.4 373 M
+(  ) s
+/Courier-Bold 7 7 SUF
+43.8 373 M
+(public) s
+/F-gs-font 7 7 SF
+69 373 M
+( ) s
+/Courier-Bold 7 7 SUF
+73.2 373 M
+(int) s
+/F-gs-font 7 7 SF
+85.8 373 M
+( antProsessorer\(\) {) s
+18.6 365 M (18:) s
+35.4 365 M
+(    ) s
+/Courier-Bold 7 7 SUF
+52.2 365 M
+(return) s
+/F-gs-font 7 7 SF
+77.4 365 M
+( antPros;) s
+18.6 357 M (19:) s
+35.4 357 M
+(  }) s
+18.6 349 M (20:) s
+18.6 341 M (21:) s
+35.4 341 M
+(  ) s
+/Courier-Oblique 7 7 SUF
+43.8 341 M
+(// basert paa en gitt minnestorrelse, svarer denne metoden paa om noden har tilstr) s
+/F-gs-font 7 7 SF
+18.6 333 M (22:) s
+/Courier-Oblique 7 7 SUF
+/F-gs-font 7 7 SF
+35.4 333 M
+(  ) s
+/Courier-Oblique 7 7 SUF
+43.8 333 M
+(// returverdi av type boolean.) s
+/F-gs-font 7 7 SF
+18.6 325 M (23:) s
+/Courier-Oblique 7 7 SUF
+/F-gs-font 7 7 SF
+35.4 325 M
+(  ) s
+/Courier-Bold 7 7 SUF
+43.8 325 M
+(public) s
+/F-gs-font 7 7 SF
+69 325 M
+( ) s
+/Courier-Bold 7 7 SUF
+73.2 325 M
+(boolean) s
+/F-gs-font 7 7 SF
+102.6 325 M
+( nokMinne \() s
+/Courier-Bold 7 7 SUF
+148.8 325 M
+(int) s
+/F-gs-font 7 7 SF
+161.4 325 M
+( paakrevdMinne\) {) s
+18.6 317 M (24:) s
+35.4 317 M
+(    ) s
+/Courier-Bold 7 7 SUF
+52.2 317 M
+(boolean) s
+/F-gs-font 7 7 SF
+81.6 317 M
+( sann = ) s
+/Courier-Bold 7 7 SUF
+115.2 317 M
+(true) s
+/F-gs-font 7 7 SF
+132 317 M
+(;) s
+18.6 309 M (25:) s
+35.4 309 M
+(    ) s
+/Courier-Bold 7 7 SUF
+52.2 309 M
+(boolean) s
+/F-gs-font 7 7 SF
+81.6 309 M
+( usann = ) s
+/Courier-Bold 7 7 SUF
+119.4 309 M
+(false) s
+/F-gs-font 7 7 SF
+140.4 309 M
+(;) s
+18.6 301 M (26:) s
+35.4 301 M
+(    ) s
+/Courier-Bold 7 7 SUF
+52.2 301 M
+(if) s
+/F-gs-font 7 7 SF
+60.6 301 M
+( \(paakrevdMinne <= minne\) {) s
+18.6 293 M (27:) s
+35.4 293 M
+(      ) s
+/Courier-Bold 7 7 SUF
+60.6 293 M
+(return) s
+/F-gs-font 7 7 SF
+85.8 293 M
+( sann;) s
+18.6 285 M (28:) s
+35.4 285 M
+(    }) s
+18.6 277 M (29:) s
+35.4 277 M
+(    ) s
+/Courier-Bold 7 7 SUF
+52.2 277 M
+(else) s
+/F-gs-font 7 7 SF
+69 277 M
+( {) s
+18.6 269 M (30:) s
+35.4 269 M
+(      ) s
+/Courier-Bold 7 7 SUF
+60.6 269 M
+(return) s
+/F-gs-font 7 7 SF
+85.8 269 M
+( usann;) s
+18.6 261 M (31:) s
+35.4 261 M
+(    }) s
+18.6 253 M (32:) s
+35.4 253 M
+(  }) s
+18.6 245 M (33:) s
+35.4 245 M
+(}) s
+18.6 237 M (34:) s
+/Courier-Oblique 7 7 SUF
+35.4 237 M
+(// klasse som representerer Racks i en regneklynge) s
+/F-gs-font 7 7 SF
+18.6 229 M (35:) s
+/Courier-Oblique 7 7 SUF
+/F-gs-font 7 7 SF
+/Courier-Bold 7 7 SUF
+35.4 229 M
+(import) s
+/F-gs-font 7 7 SF
+60.6 229 M
+( java.util.ArrayList;) s
+18.6 221 M (36:) s
+18.6 213 M (37:) s
+/Courier-Bold 7 7 SUF
+35.4 213 M
+(class) s
+/F-gs-font 7 7 SF
+56.4 213 M
+( Rack {) s
+18.6 205 M (38:) s
+35.4 205 M
+(  ) s
+/Courier-Oblique 7 7 SUF
+43.8 205 M
+(// oppretter en Arraylist som skal holde paa antall noder.) s
+/F-gs-font 7 7 SF
+18.6 197 M (39:) s
+/Courier-Oblique 7 7 SUF
+/F-gs-font 7 7 SF
+35.4 197 M
+(  ) s
+/Courier-Oblique 7 7 SUF
+43.8 197 M
+(// lengden av denne er av en storrelse som vil bli oppgitt. Derfor kunne det) s
+/F-gs-font 7 7 SF
+18.6 189 M (40:) s
+/Courier-Oblique 7 7 SUF
+/F-gs-font 7 7 SF
+35.4 189 M
+(  ) s
+/Courier-Oblique 7 7 SUF
+43.8 189 M
+(// vaert en vanlig Array ogsaa, men det er ikke nodvendig. Jeg synes det er mer) s
+/F-gs-font 7 7 SF
+18.6 181 M (41:) s
+/Courier-Oblique 7 7 SUF
+/F-gs-font 7 7 SF
+35.4 181 M
+(  ) s
+/Courier-Oblique 7 7 SUF
+43.8 181 M
+(// kronglete aa haandtere et vanlig Array siden storrelsen er den samme hele tiden) s
+/F-gs-font 7 7 SF
+18.6 173 M (42:) s
+/Courier-Oblique 7 7 SUF
+/F-gs-font 7 7 SF
+35.4 173 M
+(  ) s
+/Courier-Oblique 7 7 SUF
+43.8 173 M
+(// mens ArrayLists har size\(\)-funksjonen som er veldig gjev.) s
+/F-gs-font 7 7 SF
+18.6 165 M (43:) s
+/Courier-Oblique 7 7 SUF
+/F-gs-font 7 7 SF
+35.4 165 M
+(  ) s
+/Courier-Bold 7 7 SUF
+43.8 165 M
+(private) s
+/F-gs-font 7 7 SF
+73.2 165 M
+( ArrayList<Node> nodeListe;) s
+18.6 157 M (44:) s
+35.4 157 M
+(  ) s
+/Courier-Bold 7 7 SUF
+43.8 157 M
+(private) s
+/F-gs-font 7 7 SF
+73.2 157 M
+( ) s
+/Courier-Bold 7 7 SUF
+77.4 157 M
+(int) s
+/F-gs-font 7 7 SF
+90 157 M
+( maksAntNoder;) s
+18.6 149 M (45:) s
+18.6 141 M (46:) s
+35.4 141 M
+(  ) s
+/Courier-Oblique 7 7 SUF
+43.8 141 M
+(// Konstruktor som tar imot hvor mange noder et rack skal inneholde.) s
+/F-gs-font 7 7 SF
+18.6 133 M (47:) s
+/Courier-Oblique 7 7 SUF
+/F-gs-font 7 7 SF
+35.4 133 M
+(  ) s
+/Courier-Bold 7 7 SUF
+43.8 133 M
+(public) s
+/F-gs-font 7 7 SF
+69 133 M
+( Rack \() s
+/Courier-Bold 7 7 SUF
+98.4 133 M
+(int) s
+/F-gs-font 7 7 SF
+111 133 M
+( maksAntNoder\) {) s
+18.6 125 M (48:) s
+35.4 125 M
+(    ) s
+/Courier-Bold 7 7 SUF
+52.2 125 M
+(this) s
+/F-gs-font 7 7 SF
+69 125 M
+(.maksAntNoder = maksAntNoder;) s
+18.6 117 M (49:) s
+35.4 117 M
+(    nodeListe = ) s
+/Courier-Bold 7 7 SUF
+102.6 117 M
+(new) s
+/F-gs-font 7 7 SF
+115.2 117 M
+( ArrayList<Node>\(\);) s
+18.6 109 M (50:) s
+35.4 109 M
+(  }) s
+18.6 101 M (51:) s
+18.6 93 M (52:) s
+35.4 93 M
+(  ) s
+/Courier-Oblique 7 7 SUF
+43.8 93 M
+(// Denne metoden tar imot en node og sjekker om det er plass i racket \(nodeListe\).) s
+/F-gs-font 7 7 SF
+18.6 85 M (53:) s
+/Courier-Oblique 7 7 SUF
+/F-gs-font 7 7 SF
+35.4 85 M
+(  ) s
+/Courier-Oblique 7 7 SUF
+43.8 85 M
+(// dersom det er det legger den til noden i listen og returnerer true. Hvis ikke r) s
+/F-gs-font 7 7 SF
+18.6 77 M (54:) s
+/Courier-Oblique 7 7 SUF
+/F-gs-font 7 7 SF
+35.4 77 M
+(  ) s
+/Courier-Oblique 7 7 SUF
+43.8 77 M
+(// returverdi av type boolean.) s
+/F-gs-font 7 7 SF
+18.6 69 M (55:) s
+/Courier-Oblique 7 7 SUF
+/F-gs-font 7 7 SF
+35.4 69 M
+(  ) s
+/Courier-Bold 7 7 SUF
+43.8 69 M
+(public) s
+/F-gs-font 7 7 SF
+69 69 M
+( ) s
+/Courier-Bold 7 7 SUF
+73.2 69 M
+(boolean) s
+/F-gs-font 7 7 SF
+102.6 69 M
+( settInn\(Node node\) {) s
+18.6 61 M (56:) s
+35.4 61 M
+(    ) s
+/Courier-Bold 7 7 SUF
+52.2 61 M
+(boolean) s
+/F-gs-font 7 7 SF
+81.6 61 M
+( sann = ) s
+/Courier-Bold 7 7 SUF
+115.2 61 M
+(true) s
+/F-gs-font 7 7 SF
+132 61 M
+(;) s
+18.6 53 M (57:) s
+35.4 53 M
+(    ) s
+/Courier-Bold 7 7 SUF
+52.2 53 M
+(boolean) s
+/F-gs-font 7 7 SF
+81.6 53 M
+( usann = ) s
+/Courier-Bold 7 7 SUF
+119.4 53 M
+(false) s
+/F-gs-font 7 7 SF
+140.4 53 M
+(;) s
+18.6 45 M (58:) s
+35.4 45 M
+(    ) s
+/Courier-Bold 7 7 SUF
+52.2 45 M
+(if) s
+/F-gs-font 7 7 SF
+60.6 45 M
+( \(nodeListe.size\(\) < maksAntNoder\) {) s
+18.6 37 M (59:) s
+35.4 37 M
+(      nodeListe.add\(node\);) s
+18.6 29 M (60:) s
+35.4 29 M
+(      ) s
+/Courier-Bold 7 7 SUF
+60.6 29 M
+(return) s
+/F-gs-font 7 7 SF
+85.8 29 M
+( sann;) s
+18.6 21 M (61:) s
+35.4 21 M
+(    }) s
+18.6 13 M (62:) s
+35.4 13 M
+(    ) s
+/Courier-Bold 7 7 SUF
+52.2 13 M
+(else) s
+/F-gs-font 7 7 SF
+69 13 M
+( {) s
+18.6 5 M (63:) s
+35.4 5 M
+(      ) s
+/Courier-Bold 7 7 SUF
+60.6 5 M
+(return) s
+/F-gs-font 7 7 SF
+85.8 5 M
+( usann;) s
+415.6 501 M (64:) s
+432.4 501 M
+(    }) s
+415.6 493 M (65:) s
+432.4 493 M
+(  }) s
+415.6 485 M (66:) s
+415.6 477 M (67:) s
+432.4 477 M
+(  ) s
+/Courier-Oblique 7 7 SUF
+440.8 477 M
+(// henter antall noder i racket.) s
+/F-gs-font 7 7 SF
+415.6 469 M (68:) s
+/Courier-Oblique 7 7 SUF
+/F-gs-font 7 7 SF
+432.4 469 M
+(  ) s
+/Courier-Oblique 7 7 SUF
+440.8 469 M
+(// returverdi av type int.) s
+/F-gs-font 7 7 SF
+415.6 461 M (69:) s
+/Courier-Oblique 7 7 SUF
+/F-gs-font 7 7 SF
+432.4 461 M
+(  ) s
+/Courier-Bold 7 7 SUF
+440.8 461 M
+(public) s
+/F-gs-font 7 7 SF
+466 461 M
+( ) s
+/Courier-Bold 7 7 SUF
+470.2 461 M
+(int) s
+/F-gs-font 7 7 SF
+482.8 461 M
+( getAntNoder\(\) {) s
+415.6 453 M (70:) s
+432.4 453 M
+(    ) s
+/Courier-Bold 7 7 SUF
+449.2 453 M
+(return) s
+/F-gs-font 7 7 SF
+474.4 453 M
+( nodeListe.size\(\);) s
+415.6 445 M (71:) s
+432.4 445 M
+(  }) s
+415.6 437 M (72:) s
+415.6 429 M (73:) s
+432.4 429 M
+(  ) s
+/Courier-Oblique 7 7 SUF
+440.8 429 M
+(// henter totalt antall prosessorer i racket.) s
+/F-gs-font 7 7 SF
+415.6 421 M (74:) s
+/Courier-Oblique 7 7 SUF
+/F-gs-font 7 7 SF
+432.4 421 M
+(  ) s
+/Courier-Oblique 7 7 SUF
+440.8 421 M
+(// returverdi av type int) s
+/F-gs-font 7 7 SF
+415.6 413 M (75:) s
+/Courier-Oblique 7 7 SUF
+/F-gs-font 7 7 SF
+432.4 413 M
+(  ) s
+/Courier-Bold 7 7 SUF
+440.8 413 M
+(public) s
+/F-gs-font 7 7 SF
+466 413 M
+( ) s
+/Courier-Bold 7 7 SUF
+470.2 413 M
+(int) s
+/F-gs-font 7 7 SF
+482.8 413 M
+( antPros\(\) {) s
+415.6 405 M (76:) s
+432.4 405 M
+(    ) s
+/Courier-Bold 7 7 SUF
+449.2 405 M
+(int) s
+/F-gs-font 7 7 SF
+461.8 405 M
+( teller = 0;) s
+415.6 397 M (77:) s
+432.4 397 M
+(    ) s
+/Courier-Bold 7 7 SUF
+449.2 397 M
+(for) s
+/F-gs-font 7 7 SF
+461.8 397 M
+( \() s
+/Courier-Bold 7 7 SUF
+470.2 397 M
+(int) s
+/F-gs-font 7 7 SF
+482.8 397 M
+( i = 0; i < nodeListe.size\(\); i++\) {) s
+415.6 389 M (78:) s
+432.4 389 M
+(      teller += nodeListe.get\(i\).antProsessorer\(\);) s
+415.6 381 M (79:) s
+432.4 381 M
+(    }) s
+415.6 373 M (80:) s
+432.4 373 M
+(    ) s
+/Courier-Bold 7 7 SUF
+449.2 373 M
+(return) s
+/F-gs-font 7 7 SF
+474.4 373 M
+( teller;) s
+415.6 365 M (81:) s
+432.4 365 M
+(  }) s
+415.6 357 M (82:) s
+415.6 349 M (83:) s
+432.4 349 M
+(  ) s
+/Courier-Oblique 7 7 SUF
+440.8 349 M
+(// henter antall noder som har minimum en gitt minnestorrelse i racket.) s
+/F-gs-font 7 7 SF
+415.6 341 M (84:) s
+/Courier-Oblique 7 7 SUF
+/F-gs-font 7 7 SF
+432.4 341 M
+(  ) s
+/Courier-Oblique 7 7 SUF
+440.8 341 M
+(// returverdi av type int) s
+/F-gs-font 7 7 SF
+415.6 333 M (85:) s
+/Courier-Oblique 7 7 SUF
+/F-gs-font 7 7 SF
+432.4 333 M
+(  ) s
+/Courier-Bold 7 7 SUF
+440.8 333 M
+(public) s
+/F-gs-font 7 7 SF
+466 333 M
+( ) s
+/Courier-Bold 7 7 SUF
+470.2 333 M
+(int) s
+/F-gs-font 7 7 SF
+482.8 333 M
+( noderMedNokMinne\() s
+/Courier-Bold 7 7 SUF
+558.4 333 M
+(int) s
+/F-gs-font 7 7 SF
+571 333 M
+( paakrevdMinne\) {) s
+415.6 325 M (86:) s
+432.4 325 M
+(    ) s
+/Courier-Bold 7 7 SUF
+449.2 325 M
+(int) s
+/F-gs-font 7 7 SF
+461.8 325 M
+( antall = 0;) s
+415.6 317 M (87:) s
+432.4 317 M
+(    ) s
+/Courier-Bold 7 7 SUF
+449.2 317 M
+(for) s
+/F-gs-font 7 7 SF
+461.8 317 M
+( \() s
+/Courier-Bold 7 7 SUF
+470.2 317 M
+(int) s
+/F-gs-font 7 7 SF
+482.8 317 M
+( i = 0; i < nodeListe.size\(\); i++\) {) s
+415.6 309 M (88:) s
+432.4 309 M
+(      ) s
+/Courier-Bold 7 7 SUF
+457.6 309 M
+(if) s
+/F-gs-font 7 7 SF
+466 309 M
+( \(nodeListe.get\(i\).nokMinne\(paakrevdMinne\)\) {) s
+415.6 301 M (89:) s
+432.4 301 M
+(        antall++;) s
+415.6 293 M (90:) s
+432.4 293 M
+(      }) s
+415.6 285 M (91:) s
+432.4 285 M
+(    }) s
+415.6 277 M (92:) s
+432.4 277 M
+(    ) s
+/Courier-Bold 7 7 SUF
+449.2 277 M
+(return) s
+/F-gs-font 7 7 SF
+474.4 277 M
+( antall;) s
+415.6 269 M (93:) s
+432.4 269 M
+(  }) s
+415.6 261 M (94:) s
+432.4 261 M
+(}) s
+415.6 253 M (95:) s
+/Courier-Oblique 7 7 SUF
+432.4 253 M
+(// importerer de nodvendige settene med funksjoner fra Java-biblioteket) s
+/F-gs-font 7 7 SF
+415.6 245 M (96:) s
+/Courier-Oblique 7 7 SUF
+/F-gs-font 7 7 SF
+/Courier-Bold 7 7 SUF
+432.4 245 M
+(import) s
+/F-gs-font 7 7 SF
+457.6 245 M
+( java.util.ArrayList;) s
+415.6 237 M (97:) s
+/Courier-Bold 7 7 SUF
+432.4 237 M
+(import) s
+/F-gs-font 7 7 SF
+457.6 237 M
+( java.io.File;) s
+415.6 229 M (98:) s
+/Courier-Bold 7 7 SUF
+432.4 229 M
+(import) s
+/F-gs-font 7 7 SF
+457.6 229 M
+( java.util.Scanner;) s
+415.6 221 M (99:) s
+411.4 213 M (100:) s
+/Courier-Bold 7 7 SUF
+432.4 213 M
+(class) s
+/F-gs-font 7 7 SF
+453.4 213 M
+( Regneklynge {) s
+411.4 205 M (101:) s
+432.4 205 M
+(        ) s
+/Courier-Oblique 7 7 SUF
+466 205 M
+(// Deklarerer nyttige instansvariabler) s
+/F-gs-font 7 7 SF
+411.4 197 M (102:) s
+/Courier-Oblique 7 7 SUF
+/F-gs-font 7 7 SF
+432.4 197 M
+(        ) s
+/Courier-Bold 7 7 SUF
+466 197 M
+(private) s
+/F-gs-font 7 7 SF
+495.4 197 M
+( String filNavn;) s
+411.4 189 M (103:) s
+432.4 189 M
+(        ) s
+/Courier-Bold 7 7 SUF
+466 189 M
+(private) s
+/F-gs-font 7 7 SF
+495.4 189 M
+( ) s
+/Courier-Bold 7 7 SUF
+499.6 189 M
+(int) s
+/F-gs-font 7 7 SF
+512.2 189 M
+( noderPerRack;) s
+411.4 181 M (104:) s
+432.4 181 M
+(        ) s
+/Courier-Oblique 7 7 SUF
+466 181 M
+(// Oppretter en ArrayList som vil fungere som selve regneklyngen. En liste m) s
+/F-gs-font 7 7 SF
+411.4 173 M (105:) s
+/Courier-Oblique 7 7 SUF
+/F-gs-font 7 7 SF
+432.4 173 M
+(        ) s
+/Courier-Oblique 7 7 SUF
+466 173 M
+(// ArrayList er et bedre alternativ til en vnlig Array siden storrelsen paa) s
+/F-gs-font 7 7 SF
+411.4 165 M (106:) s
+/Courier-Oblique 7 7 SUF
+/F-gs-font 7 7 SF
+432.4 165 M
+(        ) s
+/Courier-Oblique 7 7 SUF
+466 165 M
+(// regneklyngen/listen med racks vil oke etterhvert som rackene blir fylt op) s
+/F-gs-font 7 7 SF
+411.4 157 M (107:) s
+/Courier-Oblique 7 7 SUF
+/F-gs-font 7 7 SF
+432.4 157 M
+(        ) s
+/Courier-Bold 7 7 SUF
+466 157 M
+(private) s
+/F-gs-font 7 7 SF
+495.4 157 M
+( ArrayList<Rack> listeRacks;) s
+411.4 149 M (108:) s
+411.4 141 M (109:) s
+432.4 141 M
+(        ) s
+/Courier-Oblique 7 7 SUF
+466 141 M
+(// Konstruktoren tar inn et filnavn som parameter. Dette trengs til aa akses) s
+/F-gs-font 7 7 SF
+411.4 133 M (110:) s
+/Courier-Oblique 7 7 SUF
+/F-gs-font 7 7 SF
+432.4 133 M
+(        ) s
+/Courier-Bold 7 7 SUF
+466 133 M
+(public) s
+/F-gs-font 7 7 SF
+491.2 133 M
+( Regneklynge\(String filNavn\) {) s
+411.4 125 M (111:) s
+432.4 125 M
+(                ) s
+/Courier-Oblique 7 7 SUF
+499.6 125 M
+(// setter instansvariabelen filNavn til vaere lik det gitte filnavne) s
+/F-gs-font 7 7 SF
+411.4 117 M (112:) s
+/Courier-Oblique 7 7 SUF
+/F-gs-font 7 7 SF
+432.4 117 M
+(                ) s
+/Courier-Bold 7 7 SUF
+499.6 117 M
+(this) s
+/F-gs-font 7 7 SF
+516.4 117 M
+(.filNavn = filNavn;) s
+411.4 109 M (113:) s
+432.4 109 M
+(                ) s
+/Courier-Oblique 7 7 SUF
+499.6 109 M
+(// Oppretter en Scanner som vi kan bruke til aa lese av filen for re) s
+/F-gs-font 7 7 SF
+411.4 101 M (114:) s
+/Courier-Oblique 7 7 SUF
+/F-gs-font 7 7 SF
+432.4 101 M
+(                Scanner fil = ) s
+/Courier-Bold 7 7 SUF
+558.4 101 M
+(null) s
+/F-gs-font 7 7 SF
+575.2 101 M
+(;) s
+411.4 93 M (115:) s
+432.4 93 M
+(                ) s
+/Courier-Oblique 7 7 SUF
+499.6 93 M
+(// Lager en try-catch test som skjekker om filen er gyldig. Hvis ikk) s
+/F-gs-font 7 7 SF
+411.4 85 M (116:) s
+/Courier-Oblique 7 7 SUF
+/F-gs-font 7 7 SF
+432.4 85 M
+(    ) s
+/Courier-Bold 7 7 SUF
+449.2 85 M
+(try) s
+/F-gs-font 7 7 SF
+461.8 85 M
+( {) s
+411.4 77 M (117:) s
+432.4 77 M
+(        fil = ) s
+/Courier-Bold 7 7 SUF
+491.2 77 M
+(new) s
+/F-gs-font 7 7 SF
+503.8 77 M
+( Scanner\() s
+/Courier-Bold 7 7 SUF
+541.6 77 M
+(new) s
+/F-gs-font 7 7 SF
+554.2 77 M
+( File\(filNavn\)\);) s
+411.4 69 M (118:) s
+432.4 69 M
+(    } ) s
+/Courier-Bold 7 7 SUF
+457.6 69 M
+(catch) s
+/F-gs-font 7 7 SF
+478.6 69 M
+( \(Exception e\) {) s
+411.4 61 M (119:) s
+432.4 61 M
+(        System.out.println\() s
+/Courier-Bold 7 7 SUF
+545.8 61 M
+("Kan ikke lese ") s
+/F-gs-font 7 7 SF
+613 61 M
+( + filNavn + ) s
+/Courier-Bold 7 7 SUF
+667.6 61 M
+("!") s
+/F-gs-font 7 7 SF
+680.2 61 M
+(\);) s
+411.4 53 M (120:) s
+432.4 53 M
+(        System.exit\(-1\);) s
+411.4 45 M (121:) s
+432.4 45 M
+(    }) s
+411.4 37 M (122:) s
+411.4 29 M (123:) s
+432.4 29 M
+(                ) s
+/Courier-Oblique 7 7 SUF
+499.6 29 M
+(// henter ut forste tall fra filen, som representerer noderPerRack.) s
+/F-gs-font 7 7 SF
+411.4 21 M (124:) s
+/Courier-Oblique 7 7 SUF
+/F-gs-font 7 7 SF
+432.4 21 M
+(                noderPerRack = fil.nextInt\(\);) s
+411.4 13 M (125:) s
+432.4 13 M
+(                ) s
+/Courier-Oblique 7 7 SUF
+499.6 13 M
+(// fullforer deklrasjonen av ArrayListen her og oppretter det forste) s
+/F-gs-font 7 7 SF
+411.4 5 M (126:) s
+/Courier-Oblique 7 7 SUF
+/F-gs-font 7 7 SF
+432.4 5 M
+(                listeRacks = ) s
+/Courier-Bold 7 7 SUF
+554.2 5 M
+(new) s
+/F-gs-font 7 7 SF
+566.8 5 M
+( ArrayList<Rack>\(\);) s
+_R
+S
+%%Page: (2) 2
+%%BeginPageSetup
+_S
+90 rotate
+24 -571 translate
+/pagenum 2 def
+/fname (Oblig1.java) def
+/fdir (.) def
+/ftail (Oblig1.java) def
+% User defined strings:
+/pagenumstr (2) def
+/moddatestr (06/06/19) def
+/modtimestr (14:26:33) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+column_lines
+do_header
+14.4 501 M (127:) s
+35.4 501 M
+(                Rack rack = ) s
+/Courier-Bold 7 7 SUF
+153 501 M
+(new) s
+/F-gs-font 7 7 SF
+165.6 501 M
+( Rack\(noderPerRack\);) s
+14.4 493 M (128:) s
+35.4 493 M
+(                ) s
+/Courier-Oblique 7 7 SUF
+102.6 493 M
+(// setter racket inn i regneklyngen \(listeRacks\) i slutten av listen) s
+/F-gs-font 7 7 SF
+14.4 485 M (129:) s
+/Courier-Oblique 7 7 SUF
+/F-gs-font 7 7 SF
+35.4 485 M
+(                listeRacks.add\(rack\);) s
+14.4 477 M (130:) s
+14.4 469 M (131:) s
+35.4 469 M
+(                ) s
+/Courier-Oblique 7 7 SUF
+102.6 469 M
+(// Her lager vi en lokke som leser hvert tall fra listen saa lenge d) s
+/F-gs-font 7 7 SF
+14.4 461 M (132:) s
+/Courier-Oblique 7 7 SUF
+/F-gs-font 7 7 SF
+35.4 461 M
+(                ) s
+/Courier-Bold 7 7 SUF
+102.6 461 M
+(while) s
+/F-gs-font 7 7 SF
+123.6 461 M
+( \(fil.hasNextInt\(\)\) {) s
+14.4 453 M (133:) s
+35.4 453 M
+(                        ) s
+/Courier-Bold 7 7 SUF
+136.2 453 M
+(int) s
+/F-gs-font 7 7 SF
+148.8 453 M
+( antallNoder = fil.nextInt\(\);) s
+14.4 445 M (134:) s
+35.4 445 M
+(                        ) s
+/Courier-Bold 7 7 SUF
+136.2 445 M
+(int) s
+/F-gs-font 7 7 SF
+148.8 445 M
+( minnePerNode  = fil.nextInt\(\);) s
+14.4 437 M (135:) s
+35.4 437 M
+(                        ) s
+/Courier-Bold 7 7 SUF
+136.2 437 M
+(int) s
+/F-gs-font 7 7 SF
+148.8 437 M
+( antallProsessorer = fil.nextInt\(\);) s
+14.4 429 M (136:) s
+14.4 421 M (137:) s
+35.4 421 M
+(                        ) s
+/Courier-Oblique 7 7 SUF
+136.2 421 M
+(// Kaller paa metoden settInnNode med tallene vi nettopp les) s
+/F-gs-font 7 7 SF
+14.4 413 M (138:) s
+/Courier-Oblique 7 7 SUF
+/F-gs-font 7 7 SF
+35.4 413 M
+(                        ) s
+/Courier-Oblique 7 7 SUF
+136.2 413 M
+(// Dette er en effektiv metode fordi det tillater filen til ) s
+/F-gs-font 7 7 SF
+14.4 405 M (139:) s
+/Courier-Oblique 7 7 SUF
+/F-gs-font 7 7 SF
+35.4 405 M
+(                        ) s
+/Courier-Oblique 7 7 SUF
+136.2 405 M
+(// og saa lenge det er skrevet paa samme format vil vil den ) s
+/F-gs-font 7 7 SF
+14.4 397 M (140:) s
+/Courier-Oblique 7 7 SUF
+/F-gs-font 7 7 SF
+35.4 397 M
+(                        ) s
+/Courier-Oblique 7 7 SUF
+136.2 397 M
+(// verdier og kalle paa settInnNode med disse verdiene.) s
+/F-gs-font 7 7 SF
+14.4 389 M (141:) s
+/Courier-Oblique 7 7 SUF
+/F-gs-font 7 7 SF
+35.4 389 M
+(                        settInnNode\(antallNoder, minnePerNode, antallProsessorer\);) s
+14.4 381 M (142:) s
+35.4 381 M
+(                }) s
+14.4 373 M (143:) s
+35.4 373 M
+(        }) s
+14.4 365 M (144:) s
+14.4 357 M (145:) s
+35.4 357 M
+(        ) s
+/Courier-Oblique 7 7 SUF
+69 357 M
+(// Denne metoden tar imot verdiene sendt fra Konstruktoren og gaar gjennom e) s
+/F-gs-font 7 7 SF
+14.4 349 M (146:) s
+/Courier-Oblique 7 7 SUF
+/F-gs-font 7 7 SF
+35.4 349 M
+(        ) s
+/Courier-Oblique 7 7 SUF
+69 349 M
+(// basert paa "antNoder" og oppretter nye noder basert paa "minne" og "antPr) s
+/F-gs-font 7 7 SF
+14.4 341 M (147:) s
+/Courier-Oblique 7 7 SUF
+/F-gs-font 7 7 SF
+35.4 341 M
+(        ) s
+/Courier-Bold 7 7 SUF
+69 341 M
+(public) s
+/F-gs-font 7 7 SF
+94.2 341 M
+( ) s
+/Courier-Bold 7 7 SUF
+98.4 341 M
+(void) s
+/F-gs-font 7 7 SF
+115.2 341 M
+( settInnNode\() s
+/Courier-Bold 7 7 SUF
+169.8 341 M
+(int) s
+/F-gs-font 7 7 SF
+182.4 341 M
+( antNoder, ) s
+/Courier-Bold 7 7 SUF
+228.6 341 M
+(int) s
+/F-gs-font 7 7 SF
+241.2 341 M
+( minne, ) s
+/Courier-Bold 7 7 SUF
+274.8 341 M
+(int) s
+/F-gs-font 7 7 SF
+287.4 341 M
+( antPros\) {) s
+14.4 333 M (148:) s
+35.4 333 M
+(                ) s
+/Courier-Bold 7 7 SUF
+102.6 333 M
+(for) s
+/F-gs-font 7 7 SF
+115.2 333 M
+( \() s
+/Courier-Bold 7 7 SUF
+123.6 333 M
+(int) s
+/F-gs-font 7 7 SF
+136.2 333 M
+( i = 0; i < antNoder; i++\){) s
+14.4 325 M (149:) s
+35.4 325 M
+(      Node node = ) s
+/Courier-Bold 7 7 SUF
+111 325 M
+(new) s
+/F-gs-font 7 7 SF
+123.6 325 M
+( Node\(minne, antPros\);) s
+14.4 317 M (150:) s
+35.4 317 M
+(                        ) s
+/Courier-Oblique 7 7 SUF
+136.2 317 M
+(// videre kaller vi paa en ny metode for hver iterasjon med ) s
+/F-gs-font 7 7 SF
+14.4 309 M (151:) s
+/Courier-Oblique 7 7 SUF
+/F-gs-font 7 7 SF
+35.4 309 M
+(                        kallSettInn\(node\);) s
+14.4 301 M (152:) s
+35.4 301 M
+(    }) s
+14.4 293 M (153:) s
+35.4 293 M
+(        }) s
+14.4 285 M (154:) s
+14.4 277 M (155:) s
+35.4 277 M
+(        ) s
+/Courier-Oblique 7 7 SUF
+69 277 M
+(// Denne tar imot en node, henter et rack \(det siste racket i ArrayListen\),) s
+/F-gs-font 7 7 SF
+14.4 269 M (156:) s
+/Courier-Oblique 7 7 SUF
+/F-gs-font 7 7 SF
+35.4 269 M
+(        ) s
+/Courier-Oblique 7 7 SUF
+69 269 M
+(// ser om det er plass og hvis det er det, setter den inn noden.) s
+/F-gs-font 7 7 SF
+14.4 261 M (157:) s
+/Courier-Oblique 7 7 SUF
+/F-gs-font 7 7 SF
+35.4 261 M
+(        ) s
+/Courier-Oblique 7 7 SUF
+69 261 M
+(// dette gjor den ved hjelp av metoden "settInn" fra Rack som returnerer en ) s
+/F-gs-font 7 7 SF
+14.4 253 M (158:) s
+/Courier-Oblique 7 7 SUF
+/F-gs-font 7 7 SF
+35.4 253 M
+(        ) s
+/Courier-Oblique 7 7 SUF
+69 253 M
+(// basert paa om det er plass eller ikke.) s
+/F-gs-font 7 7 SF
+14.4 245 M (159:) s
+/Courier-Oblique 7 7 SUF
+/F-gs-font 7 7 SF
+35.4 245 M
+(        ) s
+/Courier-Bold 7 7 SUF
+69 245 M
+(public) s
+/F-gs-font 7 7 SF
+94.2 245 M
+( ) s
+/Courier-Bold 7 7 SUF
+98.4 245 M
+(void) s
+/F-gs-font 7 7 SF
+115.2 245 M
+( kallSettInn\(Node node\) {) s
+14.4 237 M (160:) s
+35.4 237 M
+(                ) s
+/Courier-Oblique 7 7 SUF
+102.6 237 M
+(// det er viktig aa hente det siste racket ettersom det er her de ny) s
+/F-gs-font 7 7 SF
+14.4 229 M (161:) s
+/Courier-Oblique 7 7 SUF
+/F-gs-font 7 7 SF
+35.4 229 M
+(                Rack rack = listeRacks.get\(listeRacks.size\(\) - 1\);) s
+14.4 221 M (162:) s
+35.4 221 M
+(                ) s
+/Courier-Bold 7 7 SUF
+102.6 221 M
+(if) s
+/F-gs-font 7 7 SF
+111 221 M
+( \(rack.settInn\(node\)\) {) s
+14.4 213 M (163:) s
+35.4 213 M
+(                }) s
+14.4 205 M (164:) s
+35.4 205 M
+(                ) s
+/Courier-Oblique 7 7 SUF
+102.6 205 M
+(// hvis det ikke er plass, oppretter den et nyttRack og setter noden) s
+/F-gs-font 7 7 SF
+14.4 197 M (165:) s
+/Courier-Oblique 7 7 SUF
+/F-gs-font 7 7 SF
+35.4 197 M
+(                ) s
+/Courier-Oblique 7 7 SUF
+102.6 197 M
+(// og setter saa racket inn i regneklyngen sist i regneklyngen.) s
+/F-gs-font 7 7 SF
+14.4 189 M (166:) s
+/Courier-Oblique 7 7 SUF
+/F-gs-font 7 7 SF
+35.4 189 M
+(                ) s
+/Courier-Bold 7 7 SUF
+102.6 189 M
+(else) s
+/F-gs-font 7 7 SF
+119.4 189 M
+( {) s
+14.4 181 M (167:) s
+35.4 181 M
+(                        Rack nyttRack = ) s
+/Courier-Bold 7 7 SUF
+203.4 181 M
+(new) s
+/F-gs-font 7 7 SF
+216 181 M
+( Rack\(noderPerRack\);) s
+14.4 173 M (168:) s
+35.4 173 M
+(                        nyttRack.settInn\(node\);) s
+14.4 165 M (169:) s
+35.4 165 M
+(                        listeRacks.add\(nyttRack\);) s
+14.4 157 M (170:) s
+35.4 157 M
+(                }) s
+14.4 149 M (171:) s
+35.4 149 M
+(        }) s
+14.4 141 M (172:) s
+14.4 133 M (173:) s
+35.4 133 M
+(        ) s
+/Courier-Oblique 7 7 SUF
+69 133 M
+(// metode som henter totalt antall prosessorer i listen med racks \(regneklyn) s
+/F-gs-font 7 7 SF
+14.4 125 M (174:) s
+/Courier-Oblique 7 7 SUF
+/F-gs-font 7 7 SF
+35.4 125 M
+(        ) s
+/Courier-Oblique 7 7 SUF
+69 125 M
+(// returverdi av type int) s
+/F-gs-font 7 7 SF
+14.4 117 M (175:) s
+/Courier-Oblique 7 7 SUF
+/F-gs-font 7 7 SF
+35.4 117 M
+(        ) s
+/Courier-Bold 7 7 SUF
+69 117 M
+(public) s
+/F-gs-font 7 7 SF
+94.2 117 M
+( ) s
+/Courier-Bold 7 7 SUF
+98.4 117 M
+(int) s
+/F-gs-font 7 7 SF
+111 117 M
+( antallProsessorer\(\) {) s
+14.4 109 M (176:) s
+35.4 109 M
+(                ) s
+/Courier-Bold 7 7 SUF
+102.6 109 M
+(int) s
+/F-gs-font 7 7 SF
+115.2 109 M
+( teller = 0;) s
+14.4 101 M (177:) s
+35.4 101 M
+(                ) s
+/Courier-Bold 7 7 SUF
+102.6 101 M
+(for) s
+/F-gs-font 7 7 SF
+115.2 101 M
+( \() s
+/Courier-Bold 7 7 SUF
+123.6 101 M
+(int) s
+/F-gs-font 7 7 SF
+136.2 101 M
+( i = 0; i < listeRacks.size\(\); i++\) {) s
+14.4 93 M (178:) s
+35.4 93 M
+(                        teller += listeRacks.get\(i\).antPros\(\);) s
+14.4 85 M (179:) s
+35.4 85 M
+(                }) s
+14.4 77 M (180:) s
+35.4 77 M
+(                ) s
+/Courier-Bold 7 7 SUF
+102.6 77 M
+(return) s
+/F-gs-font 7 7 SF
+127.8 77 M
+( teller;) s
+14.4 69 M (181:) s
+35.4 69 M
+(        }) s
+14.4 61 M (182:) s
+14.4 53 M (183:) s
+35.4 53 M
+(        ) s
+/Courier-Oblique 7 7 SUF
+69 53 M
+(// henter antall noder med et gitt minimum minnestorrelse.) s
+/F-gs-font 7 7 SF
+14.4 45 M (184:) s
+/Courier-Oblique 7 7 SUF
+/F-gs-font 7 7 SF
+35.4 45 M
+(        ) s
+/Courier-Oblique 7 7 SUF
+69 45 M
+(// returverdi av type int) s
+/F-gs-font 7 7 SF
+14.4 37 M (185:) s
+/Courier-Oblique 7 7 SUF
+/F-gs-font 7 7 SF
+35.4 37 M
+(        ) s
+/Courier-Bold 7 7 SUF
+69 37 M
+(public) s
+/F-gs-font 7 7 SF
+94.2 37 M
+( ) s
+/Courier-Bold 7 7 SUF
+98.4 37 M
+(int) s
+/F-gs-font 7 7 SF
+111 37 M
+( noderMedNokMinne\() s
+/Courier-Bold 7 7 SUF
+186.6 37 M
+(int) s
+/F-gs-font 7 7 SF
+199.2 37 M
+( paakrevdMinne\) {) s
+14.4 29 M (186:) s
+35.4 29 M
+(                ) s
+/Courier-Bold 7 7 SUF
+102.6 29 M
+(int) s
+/F-gs-font 7 7 SF
+115.2 29 M
+( antall = 0;) s
+14.4 21 M (187:) s
+35.4 21 M
+(                ) s
+/Courier-Bold 7 7 SUF
+102.6 21 M
+(for) s
+/F-gs-font 7 7 SF
+115.2 21 M
+( \() s
+/Courier-Bold 7 7 SUF
+123.6 21 M
+(int) s
+/F-gs-font 7 7 SF
+136.2 21 M
+( i = 0; i < listeRacks.size\(\); i++\) {) s
+14.4 13 M (188:) s
+35.4 13 M
+(                        antall += listeRacks.get\(i\).noderMedNokMinne\(paakrevdMinne\);) s
+14.4 5 M (189:) s
+35.4 5 M
+(                }) s
+411.4 501 M (190:) s
+432.4 501 M
+(                ) s
+/Courier-Bold 7 7 SUF
+499.6 501 M
+(return) s
+/F-gs-font 7 7 SF
+524.8 501 M
+( antall;) s
+411.4 493 M (191:) s
+432.4 493 M
+(        }) s
+411.4 485 M (192:) s
+411.4 477 M (193:) s
+432.4 477 M
+(        ) s
+/Courier-Oblique 7 7 SUF
+466 477 M
+(// henter antall rack i regneklyngen) s
+/F-gs-font 7 7 SF
+411.4 469 M (194:) s
+/Courier-Oblique 7 7 SUF
+/F-gs-font 7 7 SF
+432.4 469 M
+(        ) s
+/Courier-Oblique 7 7 SUF
+466 469 M
+(// returverdi av type int) s
+/F-gs-font 7 7 SF
+411.4 461 M (195:) s
+/Courier-Oblique 7 7 SUF
+/F-gs-font 7 7 SF
+432.4 461 M
+(        ) s
+/Courier-Bold 7 7 SUF
+466 461 M
+(public) s
+/F-gs-font 7 7 SF
+491.2 461 M
+( ) s
+/Courier-Bold 7 7 SUF
+495.4 461 M
+(int) s
+/F-gs-font 7 7 SF
+508 461 M
+( antallRacks\(\) {) s
+411.4 453 M (196:) s
+432.4 453 M
+(                ) s
+/Courier-Bold 7 7 SUF
+499.6 453 M
+(return) s
+/F-gs-font 7 7 SF
+524.8 453 M
+( listeRacks.size\(\);) s
+411.4 445 M (197:) s
+432.4 445 M
+(        }) s
+411.4 437 M (198:) s
+432.4 437 M
+(}) s
+_R
+S
+%%Trailer
+%%Pages: 2
+%%DocumentNeededResources: font Times-Roman Courier-Oblique Courier-Bold 
+%%+ font Courier Times-Bold 
+%%EOF
